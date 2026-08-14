@@ -26,3 +26,14 @@ CREATE TABLE staffs (
 ALTER TABLE staffs 
 ADD COLUMN profile_picture VARCHAR(255) NULL AFTER bvn, 
 ADD COLUMN nationality VARCHAR(255) DEFAULT 'Nigerian' AFTER profile_picture;
+ALTER TABLE staffs ADD COLUMN verified_at DATETIME NULL AFTER email; 
+
+CREATE TABLE account_verifications (
+	id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL,
+    user_type ENUM('staff', 'customer') DEFAULT 'customer',
+    code VARCHAR(255) NOT NULL,
+    expired_at DATETIME NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

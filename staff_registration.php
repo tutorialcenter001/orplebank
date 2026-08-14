@@ -84,7 +84,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Database Population
     if ($mobileError ==  "" && $passError == "" && $cpassError == "" && $ninError == "" && $bvnError == "" && $emailError == "") {
-
         $query = "INSERT INTO staffs(firstname, middlename, surname, email, password, phone_number, date_of_birth, gender, home_address, nin, bvn, nationality, mother_maiden_name, state_of_origin, lga_of_origin) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         $stmt = $conn->prepare($query);
         $stmt->bind_param('sssssssssssssss', $fname, $mname, $lname, $email, $hashPass, $mobile, $dob, $gender, $address, $nin, $bvn, $nationality, $mmn, $soo, $lgoo);
