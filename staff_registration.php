@@ -2,6 +2,7 @@
 $pagetitle = "Staff Registration";
 require_once('assets/header.php');
 require_once('assets/db_connect.php');
+require_once('assets/mailer.php');
 
 $fname = $mname = $lname = $email = $mobile = $dob = $password = $cpassword = $address = $gender = $nin = $bvn = $nationality = $soo = $lgoo = $mmn = $hashPass = "";
 $msg = $mobileError = $passError = $cpassError = $ninError = $bvnError = $emailError = "";
@@ -88,7 +89,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt = $conn->prepare($query);
         $stmt->bind_param('sssssssssssssss', $fname, $mname, $lname, $email, $hashPass, $mobile, $dob, $gender, $address, $nin, $bvn, $nationality, $mmn, $soo, $lgoo);
         if ($stmt->execute()) {
-            $msg = "<span class='text-green-600'>Register Successfully</span>";
+            $code = rand(100000, 999999);
+            // From current time
+            $date = new DateTime();
+            $date->setTimezone(new DateTimeZone('Africa/Lagos'));
+            // Add 30 minutes to the current time
+            $expired = $date->modify('+30 minutes')->format('Y-m-d H:i:s');
+
+            $stmt1 = $conn->prepare("INSERT INTO account_verifications(email, code, user_type, expired_at) VALUES (?, ?, 'staff', ?)");
+            $stmt1->bind_param('sss', $email, $code, $expired);
+            if ($stmt1->execute()) {
+                $fullname = $fname . " " . $mname . " " . $lname;
+                $link = "http://localhost/orplebank/staff_verification.php?email=" . urlencode($email) . "&code=" . urlencode($code);
+                // Content
+                $mail->isHTML(true);        
+                $mail->addAddress($email, $fullname); // Set email format to HTML
+                $mail->Subject = 'Account Verification';
+                $mail->Body    = "<h1>Account Verification</h1><p>Dear $fullname,</p><p>Your staff account has been created with Orple Bank. To complete your registration, please use the following verification code:</p><h2>$code</h2><p>or click the link below:</p><p><a href='$link'>Verify Account</a></p><p>This code will expire in 30 minutes.</p><p>Best regards,<br/>Orple Bank Team</p>";
+                $mail->AltBody = "Dear $fullname,\n\nYour staff account has been created with Orple Bank. To complete your registration, please use the following verification code: $code\n\nor click the link below:\n$link\n\nThis code will expire in 30 minutes.\n\nBest regards,\nOrple Bank Team";
+
+                if($mail->send()) {
+                    $msg = "<span class='text-green-600'>Register Successfully</span>";
+                }
+            }
         } else {
             $msg = "<span class='text-red-600'> Registration Failed</span>";
         }
